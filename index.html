@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>就活企業情報管理アプリ</title>
+    <style>
+        .filter-area {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-area select {
+            padding: 4px 8px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            margin: -25px -25px 30px -25px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .subtitle {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+        .btn.success {
+            background: linear-gradient(135deg, #00d2d3 0%, #54a0ff 100%);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 12px;
+            min-width: 1800px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        td {
+            padding: 10px 8px;
+            border: 1px solid #e1e8ed;
+            text-align: center;
+            background-color: white;
+            transition: background-color 0.2s ease;
+        }
+        tr:nth-child(even) td {
+            background-color: #f8f9fa;
+        }
+        tr:hover td {
+            background-color: #e3f2fd;
+        }
+        .category-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%) !important;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            font-size: 13px;
+        }
+        .basic-info { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); }
+        .recruitment-info { background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); }
+        .salary-info { background: linear-gradient(135deg, #cce5ff 0%, #a8d8ff 100%); }
+        .internship-info { background: linear-gradient(135deg, #f8d7da 0%, #f1c0c7 100%); }
+        .research-info { background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); }
+        .network-info { background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%); }
+        .memo-info { background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%); }
+        
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            background: white;
+            font-size: 11px;
+            text-align: center;
+            padding: 4px;
+            border-radius: 4px;
+            transition: border-color 0.2s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        textarea {
+            height: 50px;
+            resize: vertical;
+            text-align: left;
+        }
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        .status-indicator.show {
+            opacity: 1;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 120px;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 就活企業情報管理アプリ</h1>
+            <p class="subtitle">Desktop Application - Electron版</p>
+        </div>
+        
+        <div class="stats" id="statsContainer">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCompanies">0</div>
+                <div class="stat-label">登録企業数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="appliedCompanies">0</div>
+                <div class="stat-label">応募済み</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="interviewCompanies">0</div>
+                <div class="stat-label">面接予定</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="highPriorityCompanies">0</div>
+                <div class="stat-label">志望度高</div>
+            </div>
+        </div>
+        
+        <div class="toolbar">
+            <button class="btn" onclick="addRow()">➕ 行を追加</button>
+            <button class="btn success" onclick="saveData()">💾 データ保存</button>
+            <button class="btn success" onclick="exportCSV()">📊 CSV出力</button>
+            <button class="btn danger" onclick="clearAllData()">🗑️ 全クリア</button>
+            <div class="filter-area">
+                <label for="industryFilter" style="font-size: 12px; color: #444;">業界フィルター:</label>
+                <select id="industryFilter" onchange="filterByIndustry(this.value)">
+                    <option value="">すべて</option>
+                    <option value="IT">IT</option>
+                    <option value="メーカー">メーカー</option>
+                    <option value="商社">商社</option>
+                    <option value="金融">金融</option>
+                </select>
+            </div>
+
+            <div class="search-area" style="margin-left: 10px;">
+                <label for="searchInput" style="font-size: 12px; color: #444;">検索:</label>
+                <input type="text" id="searchInput" placeholder="企業名で検索" oninput="searchTable(this.value)" style="padding: 4px 8px; font-size: 12px; border-radius: 5px; border: 1px solid #ccc;">
+            </div>
+
+            <div style="margin-left: auto; font-size: 12px; color: #666;">
+                最終保存: <span id="lastSaved">未保存</span>
+            </div>
+        </div>
+
+        <table id="companyTable">
+            <thead>
+                <tr>
+                    <th class="category-header" colspan="6">基本情報</th>
+                    <th class="category-header" colspan="6">採用・選考情報</th>
+                    <th class="category-header" colspan="6">待遇・条件</th>
+                    <th class="category-header" colspan="4">インターン・説明会</th>
+                    <th class="category-header" colspan="5">企業研究・評価</th>
+                    <th class="category-header" colspan="3">人脈・情報源</th>
+                    <th class="category-header" colspan="2">備考・メモ</th>
+                </tr>
+                <tr>
+                    <!-- 基本情報 -->
+                    <th class="basic-info">企業名</th>
+                    <th class="basic-info">業界・事業領域</th>
+                    <th class="basic-info">企業規模<br>(従業員数)</th>
+                    <th class="basic-info">売上高</th>
+                    <th class="basic-info">本社所在地</th>
+                    <th class="basic-info">上場区分</th>
+                    
+                    <!-- 採用・選考情報 -->
+                    <th class="recruitment-info">募集職種</th>
+                    <th class="recruitment-info">採用予定人数</th>
+                    <th class="recruitment-info">選考フロー</th>
+                    <th class="recruitment-info">選考時期</th>
+                    <th class="recruitment-info">応募締切日</th>
+                    <th class="recruitment-info">選考状況</th>
+                    
+                    <!-- 待遇・条件 -->
+                    <th class="salary-info">初任給<br>(院卒)</th>
+                    <th class="salary-info">昇給・賞与</th>
+                    <th class="salary-info">福利厚生</th>
+                    <th class="salary-info">勤務地</th>
+                    <th class="salary-info">転勤</th>
+                    <th class="salary-info">残業時間目安</th>
+                    
+                    <!-- インターン・説明会 -->
+                    <th class="internship-info">インターン時期</th>
+                    <th class="internship-info">インターン内容</th>
+                    <th class="internship-info">説明会日程</th>
+                    <th class="internship-info">参加状況</th>
+                    
+                    <!-- 企業研究・評価 -->
+                    <th class="research-info">企業の強み</th>
+                    <th class="research-info">研究開発投資</th>
+                    <th class="research-info">成長性</th>
+                    <th class="research-info">企業文化</th>
+                    <th class="research-info">志望度<br>(1-5)</th>
+                    
+                    <!-- 人脈・情報源 -->
+                    <th class="network-info">情報入手先</th>
+                    <th class="network-info">知り合い</th>
+                    <th class="network-info">推薦可能性</th>
+                    
+                    <!-- 備考・メモ -->
+                    <th class="memo-info">特記事項</th>
+                    <th class="memo-info">次回アクション</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- 初期行は JavaScript で生成 -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="status-indicator" id="statusIndicator">
+        保存しました
+    </div>
+
+    <script>
+    const keys = [
+        "companyName", "industry", "companySize", "sales", "hqLocation", "listing",
+        "jobType", "hiringNumber", "selectionFlow", "selectionPeriod", "deadline", "status",
+        "salary", "bonus", "benefits", "location", "transfer", "overtime",
+        "internPeriod", "internContent", "briefing", "briefingStatus",
+        "strengths", "rdInvestment", "growth", "culture", "priority",
+        "infoSource", "acquaintance", "recommendation",
+        "notes", "nextAction"
+];
+
+        let autoSaveTimeout;
+        
+        // 初期化（ブラウザ環境用）
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSavedData();
+            addEmptyRows(3); // 初期行を3行追加
+            updateStats();
+            highlightDeadlines();
+            setupInputListeners();
+        });
+
+        // 入力時の自動保存
+        document.addEventListener('input', function() {
+            autoSaveData();
+            updateStats();
+        });
+
+        // Electronでない場合の代替処理
+        const ipcRenderer = typeof require !== 'undefined' ? require('electron').ipcRenderer : null;
+        
+        if (ipcRenderer) {
+            // Electronでのメニューイベント処理
+            ipcRenderer.on('menu-new-file', () => {
+                if (confirm('新規作成します。現在のデータは失われますが、よろしいですか？')) {
+                    clearAllData();
+                }
+            });
+
+            ipcRenderer.on('menu-load-file', (event, data) => {
+                try {
+                    const jsonData = JSON.parse(data);
+                    restoreData(jsonData);
+                    showStatus('データを読み込みました');
+                } catch (error) {
+                    alert('ファイルの読み込みに失敗しました。');
+                }
+            });
+
+            ipcRenderer.on('menu-save-file', () => {
+                saveData();
+            });
+
+            ipcRenderer.on('menu-export-csv', () => {
+                exportCSV();
+            });
+
+            ipcRenderer.on('menu-add-row', () => {
+                addRow();
+            });
+
+            ipcRenderer.on('menu-clear-all', () => {
+                clearAllData();
+            });
+        }
+        function animateCount(id, target) {
+            const el = document.getElementById(id);
+            let count = 0;
+            const step = Math.ceil(target / 20);
+            const interval = setInterval(() => {
+                count += step;
+                if (count >= target) {
+                el.textContent = target;
+                clearInterval(interval);
+                } else {
+                el.textContent = count;
+                }
+            }, 20);
+        }
+        function setupInputListeners() {
+            document.getElementById('industryFilter').addEventListener('change', (e) => {
+                filterByIndustry(e.target.value);
+            });
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchTable(e.target.value);
+            });
+        }
+
+
+
+        function addRow() {
+            addEmptyRows(1);
+            updateStats();
+            showStatus('行を追加しました');
+        }
+
+        function filterByIndustry(industry) {
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach(row => {
+                const value = row.querySelector('td:nth-child(2) input')?.value || '';
+                row.style.display = (!industry || value.includes(industry)) ? '' : 'none';
+            });
+        }
+        function searchTable(keyword) {
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach(row => {
+                const name = row.querySelector('td:nth-child(1) input')?.value || '';
+                row.style.display = name.toLowerCase().includes(keyword.toLowerCase()) ? '' : 'none';
+            });
+        }
+
+
+
+        function filterByIndustry(industry) {
+            const rows = document.querySelectorAll('#tableBody tr');
+
+            rows.forEach(row => {
+                const industryInput = row.querySelector('td:nth-child(2) input'); // 業界 = 2列目
+                const value = industryInput?.value || '';
+
+                if (!industry || value.includes(industry)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function addEmptyRows(count) {
+            const tableBody = document.getElementById('tableBody');
+            
+            for (let i = 0; i < count; i++) {
+                const row = createEmptyRow();
+                tableBody.appendChild(row);
+            }
+        }
+
+        function createEmptyRow() {
+            const row = document.createElement('tr');
+
+            // ユニークIDを付与
+            const uuid = crypto.randomUUID()
+            row.dataset.rowId = uuid;
+
+            row.innerHTML = `
+                <td><input type="text" placeholder="企業名を入力"></td>
+                <td><input type="text" placeholder="業界"></td>
+                <td><input type="text" placeholder="1000名"></td>
+                <td><input type="text" placeholder="500億円"></td>
+                <td><input type="text" placeholder="東京都"></td>
+                <td><select><option value="">選択</option><option value="東証プライム">東証プライム</option><option value="東証スタンダード">東証スタンダード</option><option value="東証グロース">東証グロース</option><option value="非上場">非上場</option></select></td>
+                
+                <td><input type="text" placeholder="研究職"></td>
+                <td><input type="text" placeholder="10名"></td>
+                <td><input type="text" placeholder="ES→面接3回"></td>
+                <td><input type="text" placeholder="3月～6月"></td>
+                <td><input type="date"></td>
+                <td><select><option value="">選択</option><option value="未応募">未応募</option><option value="ES提出済">ES提出済</option><option value="書類通過">書類通過</option><option value="面接予定">面接予定</option><option value="最終面接">最終面接</option><option value="内定">内定</option><option value="不合格">不合格</option></select></td>
+                
+                <td><input type="text" placeholder="25万円"></td>
+                <td><input type="text" placeholder="年2回賞与"></td>
+                <td><textarea placeholder="住宅手当、退職金制度など"></textarea></td>
+                <td><input type="text" placeholder="東京、大阪"></td>
+                <td><select><option value="">選択</option><option value="あり">あり</option><option value="なし">なし</option><option value="希望制">希望制</option></select></td>
+                <td><input type="text" placeholder="月20時間"></td>
+                
+                <td><input type="text" placeholder="8月、2月"></td>
+                <td><textarea placeholder="研究開発体験、5日間"></textarea></td>
+                <td><input type="text" placeholder="12/15 13:00-"></td>
+                <td><select><option value="">選択</option><option value="参加済">参加済</option><option value="申込済">申込済</option><option value="未参加">未参加</option></select></td>
+                
+                <td><textarea placeholder="技術力、研究環境など"></textarea></td>
+                <td><input type="text" placeholder="売上の15%"></td>
+                <td><select><option value="">選択</option><option value="高">高</option><option value="中">中</option><option value="低">低</option></select></td>
+                <td><textarea placeholder="風通しの良さなど"></textarea></td>
+                <td><select><option value="">選択</option><option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option></select></td>
+                
+                <td><input type="text" placeholder="就職サイト、OB"></td>
+                <td><input type="text" placeholder="先輩の名前"></td>
+                <td><select><option value="">選択</option><option value="可能">可能</option><option value="不明">不明</option><option value="不可">不可</option></select></td>
+                
+                <td><textarea placeholder="その他重要な情報"></textarea></td>
+                <td><textarea placeholder="次にすべきこと"></textarea></td>
+            `;
+            return row;
+        }
+
+        function clearAllData() {
+            if (confirm('全てのデータを削除しますか？この操作は取り消せません。')) {
+                const tableBody = document.getElementById('tableBody');
+                tableBody.innerHTML = '';
+                addEmptyRows(3);
+                updateStats();
+                updateLastSaved();
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.removeItem('jobHuntingData');
+                }
+                showStatus('データをクリアしました');
+            }
+        }
+
+        function saveData() {
+            const data = extractTableData();
+            
+            if (ipcRenderer) {
+                // Electron環境
+                ipcRenderer.invoke('save-file-dialog', JSON.stringify(data, null, 2))
+                    .then(result => {
+                        if (result.success) {
+                            showStatus('ファイルを保存しました');
+                            updateLastSaved();
+                        } else if (!result.canceled) {
+                            alert('保存に失敗しました: ' + result.error);
+                        }
+                    })
+                    .catch(err => {
+                        alert('CSV保存で予期しないエラー:' + err.message);
+                    });
+            } else {
+                // ブラウザ環境
+                downloadData(JSON.stringify(data, null, 2), 'application/json', '就活データ.json');
+                showStatus('データをダウンロードしました');
+                updateLastSaved();
+            }
+        }
+
+        function exportCSV() {
+            const data = extractTableData();
+            const csv = convertToCSV(data);
+            
+            if (ipcRenderer) {
+                // Electron環境
+                ipcRenderer.invoke('save-csv-dialog', csv)
+                    .then(result => {
+                        console.log('CSV保存結果:', result);
+                        if (result.success) {
+                            showStatus('CSVファイルを保存しました');
+                        } else if (!result.canceled) {
+                            alert('CSV保存に失敗しました: ' + result.error);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('CSV保存時のエラー:', err);
+                        alert('CSV保存で予期しないエラー: ' + err.message);
+                    });
+            } else {
+                try{
+                downloadData(csv, 'text/csv;charset=utf-8;', '就活企業情報.csv');
+                showStatus('CSVをダウンロードしました');
+                } catch (error){
+                    alert('ブラウザでのCSV保存エラー' + error.message);
+                }
+            }
+        }
+
+        function downloadData(data, mimeType, filename) {
+            const blob = new Blob([data], { type: mimeType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function extractTableData() {
+            const keys = [
+  "companyName", "industry", "companySize", "sales", "hqLocation", "listing",
+  "jobType", "hiringNumber", "selectionFlow", "selectionPeriod", "deadline", "status",
+  "salary", "bonus", "benefits", "location", "transfer", "overtime",
+  "internPeriod", "internContent", "briefing", "briefingStatus",
+  "strengths", "rdInvestment", "growth", "culture", "priority",
+  "infoSource", "acquaintance", "recommendation",
+  "notes", "nextAction"
+];
+
+            const rows = document.querySelectorAll('#tableBody tr');
+            const data = [];
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowData = {
+                    id: row.dataset.rowId || crypto.randomUUID()
+                };
+                
+                cells.forEach((cell, index) => {
+                    const input = cell.querySelector('input, select, textarea');
+                    if (index < keys.length) {
+                        rowData[keys[index]] = input.value || '';
+                    }
+                });
+                
+                // 空の行はスキップ
+                if (Object.values(rowData).some(value => value.trim() !== '')) {
+                    data.push(rowData);
+                }
+            });
+            
+            return data;
+        }
+
+        function restoreData(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            data.forEach(rowData => {
+                const row = createEmptyRow();
+                const cells = row.querySelectorAll('td');
+                
+                cells.forEach((cell, index) => {
+                    const input = cell.querySelector('input, select, textarea');
+                    if (input && keys[index] && rowData[keys[index]]) {
+                        input.value = rowData[keys[index]];
+                    }
+                });
+                
+                tableBody.appendChild(row);
+            });
+            
+            // 最低3行は確保
+            if (data.length < 3) {
+                addEmptyRows(3 - data.length);
+            }
+            
+            updateStats();
+            updateLastSaved();
+        }
+
+        function convertToCSV(data) {
+            const headers = [
+                '企業名', '業界・事業領域', '企業規模', '売上高', '本社所在地', '上場区分',
+                '募集職種', '採用予定人数', '選考フロー', '選考時期', '応募締切日', '選考状況',
+                '初任給', '昇給・賞与', '福利厚生', '勤務地', '転勤', '残業時間目安',
+                'インターン時期', 'インターン内容', '説明会日程', '参加状況',
+                '企業の強み', '研究開発投資', '成長性', '企業文化', '志望度',
+                '情報入手先', '知り合い', '推薦可能性',
+                '特記事項', '次回アクション'
+            ];
+            
+            let csv = headers.join(',') + '\n';
+            
+            data.forEach(row => {
+                const values = keys.map(key => {
+                    const value = row[key] || '';
+                    return `"${value.replace(/"/g, '""')}"`;
+                });
+                csv += values.join(',') + '\n';
+            });
+            
+            return csv;
+        }
+
+        function updateStats() {
+            const data = extractTableData();
+            
+            let totalCompanies = 0;
+            let appliedCompanies = 0;
+            let interviewCompanies = 0;
+            let highPriorityCompanies = 0;
+            
+            data.forEach(row => {
+                if (row.companyName && row.companyName.trim() !== '') { // 企業名がある場合
+                    totalCompanies++;
+                    
+                    const status = row.status || '';
+                    if (['ES提出済', '書類通過', '面接予定', '最終面接', '内定'].includes(status)) {
+                        appliedCompanies++;
+                    }
+                    if (['面接予定', '最終面接'].includes(status)) {
+                        interviewCompanies++;
+                    }
+                    
+                    const priority = row.priority || '';
+                    if (['4', '5'].includes(priority)) {
+                        highPriorityCompanies++;
+                    }
+                }
+            });
+            
+            animateCount('totalCompanies', totalCompanies);
+            animateCount('appliedCompanies', appliedCompanies);
+            animateCount('interviewCompanies', interviewCompanies);
+            animateCount('highPriorityCompanies', highPriorityCompanies);
+        }
+
+        function loadSavedData() {
+            if (typeof localStorage !== 'undefined') {
+                const savedData = localStorage.getItem('jobHuntingData');
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        restoreData(data);
+                    } catch (error) {
+                        console.error('保存データの読み込みに失敗しました:', error);
+                    }
+                }
+            }
+        }
+
+        function autoSaveData() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                if (typeof localStorage !== 'undefined') {
+                    const data = extractTableData();
+                    localStorage.setItem('jobHuntingData', JSON.stringify(data));
+                    updateLastSaved();
+                }
+            }, 1000);
+        }
+
+        function updateLastSaved() {
+            const now = new Date();
+            const timeString = now.toLocaleString('ja-JP');
+            document.getElementById('lastSaved').textContent = timeString;
+        }
+
+        function showStatus(message) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = message;
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

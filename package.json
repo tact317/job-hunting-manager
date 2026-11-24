@@ -1,0 +1,39 @@
+{
+  "name": "job-hunting-manager",
+  "version": "1.0.0",
+  "description": "就活企業情報管理アプリ",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "dist": "electron-builder"
+  },
+  "keywords": ["就活", "企業管理", "electron"],
+  "author": "tact317",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "build": {
+    "appId": "com.tact317.jobhuntingmanager",
+    "productName": "就活企業情報管理",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "icon.png"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.icns"
+    }
+  }
+}
